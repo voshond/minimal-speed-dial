@@ -11,13 +11,12 @@ window.onload = function () {
             hour: '2-digit',
             minute: '2-digit'
         });
-        // const seconds = (now.toLocaleTimeString('en-US', { second: '2-digit' })).padStart(2, '0');
+        const seconds = (now.toLocaleTimeString('en-US', { second: '2-digit' })).padStart(2, '0');
         
-        const date = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+        const date = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
         const day = `${now.toLocaleString('en-US', { weekday: 'long' })}`;
 
-        // timeElement.innerHTML = `${time}:${seconds}`;
-        timeElement.innerHTML = `${time}`;
+        timeElement.innerHTML = `${time}:${seconds}`;
         dateElement.innerHTML = `${day} ${date}`;
     }
 
