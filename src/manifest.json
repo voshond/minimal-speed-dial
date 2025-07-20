@@ -1,25 +1,26 @@
 {
-    "manifest_version": 3,
-    "name": "New Tab Minimal Speed Dial",
-    "short_name": "Minimal Speed Dial",
-    "version": "0.0.1",
-    "author": "@alterebro",
-    "icons": {
-      "128": "icons/icon-128.png"
-    },
-    "chrome_url_overrides": {
-      "newtab": "index.html"
-    },
-    "permissions": [
-      "bookmarks",
-      "favicon",
-      "storage"
-    ],
-    "web_accessible_resources": [
-      {
-        "resources": [ "*", "_favicon/*" ],
-        "matches": [ "<all_urls>" ]
-      }
-    ]
-  }
-  
+	"manifest_version": 3,
+	"name": "Minimal Speed Dial",
+	"description": "Minimal Speed Dial that populates with the links bookmarked on your Bookmarks/HomePage folder",
+	"version": "0.0.1",
+	"author": "Jorge Moreno, @alterebro",
+	"icons": {
+		"128": "icons/icon-128.png"
+	},
+	"chrome_url_overrides": {
+		"newtab": "index.html"
+	},
+	"permissions": [
+		"bookmarks",
+		"favicon"
+	],
+	"web_accessible_resources": [{
+		"resources": [
+			"*",
+			"_favicon/*"
+		],
+		"matches": [
+			"<all_urls>"
+		]
+	}]
+}
