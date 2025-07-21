@@ -16,7 +16,6 @@ html {
     -moz-text-size-adjust: none;
     -webkit-text-size-adjust: none;
     text-size-adjust: none;
-	scroll-behavior: smooth;
 	font-size: 62.5%;
     color: #323436;
     background-color: #f0f0f0;
@@ -35,6 +34,7 @@ body {
     justify-content: center;
 }
 
+/*
 header {
     text-align: center;
 
@@ -67,6 +67,7 @@ header {
         }
     }
 }
+*/
 
 main {
 
@@ -74,7 +75,7 @@ main {
         list-style: none;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
-        grid-gap: .8rem;
+        grid-gap: 0.8rem;
         justify-content: center;
         align-items: center;
         text-align: center;
@@ -94,17 +95,18 @@ main {
                     text-decoration: none;
                     text-align: center;
                     padding: 1.6rem 1.2rem 1.2rem;
-                    background: rgba(255, 255, 255, .5);
-                    color: #323436;
                     border-radius: 1rem;
-                    transition: all .2s ease-in-out;
-                    
+                    background: rgba(255, 255, 255, 0.4);
+                    color: #323436;
+                    box-shadow: none;
+                    transition: all 0.2s ease-in-out;
+
                     img {
                         display: block;
                         width: 2.4rem;
                         height: 2.4rem;
                         object-fit: cover;
-                        margin: 0 auto .8rem;
+                        margin: 0 auto 0.8rem;
                     }
                     figcaption {
                         display: block;
@@ -116,6 +118,7 @@ main {
                     &:hover {
                         background: rgba(255, 255, 255, 1);
                         color: #000;
+                        box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.025), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
                     }
                 }
             }

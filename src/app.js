@@ -2,10 +2,11 @@ window.onload = function () {
 
     const APP = {
         folder : 'HomePage',
-        clock : false,
-        search : false
+        // clock : false,
+        // search : false
     }
 
+    /*
     if (APP.clock) {
 
         function updateClock() {
@@ -48,8 +49,9 @@ window.onload = function () {
     if ( !APP.clock ) { document.querySelector('#clock').style.display = 'none'; }
     if ( !APP.search ) { document.querySelector('#search-form').style.display = 'none'; }
     if ( !APP.search && !APP.clock ) { document.querySelector('header').style.display = 'none'; }
-    
-    if (typeof chrome.bookmarks === 'undefined') return;
+    */
+
+    // if (typeof chrome.bookmarks === 'undefined') return;
 
     chrome.bookmarks.getTree((root) => {
         const folder = root[0]?.children?.[0]?.children?.find((el) => el.title === APP.folder)
