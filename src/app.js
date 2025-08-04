@@ -1,6 +1,6 @@
 window.onload = function () {
 
-    const _FOLDER = 'Speed Dial';
+    const _FOLDER = 'HomePage';
 
     chrome.bookmarks.getTree((root) => {
         const folder = root[0]?.children?.[0]?.children?.find((el) => el.title === _FOLDER)
