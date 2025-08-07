@@ -6,7 +6,7 @@
 	background-repeat: no-repeat;
 }
 
-html, body, ul, li, figure, a, img, figcaption {
+html, body, ul, li, figure, a, img, figcaption, aside, button {
     margin: 0;
     padding: 0;
 }
@@ -32,11 +32,45 @@ body {
     padding: 2rem 0;
 }
 
+aside {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    width: 4.2rem;
+    height: 4.2rem;
+
+    button {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background-color: red;
+        border-radius: 100%;
+        cursor: pointer;
+        font-size: x-large;
+        background: rgba(255, 255, 255, 0.4);
+        color: #323436;
+        transition: all 0.2s ease-in-out;
+    }
+    button:hover {
+        background: rgba(255, 255, 255, 1);
+        color: #000;
+        box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.025), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    }
+}
+
 main {
 
     width: 100%;
     max-width: 72rem;
     flex-shrink: 0;
+
+    h3 {
+        margin: 1rem 2rem;
+        font-size: small;
+        font-weight: bold;
+        padding: 0 .5rem .5rem;
+        border-bottom: dotted #ccc 1px;
+    }
 
     ul {
         list-style: none;
@@ -80,5 +114,14 @@ main {
         overflow: hidden;
         text-overflow: ellipsis;
         font-size: small;
+    }
+
+    p {
+        text-align: center;
+        padding: 1.6rem 1.2rem 1.2rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.4);
+        color: #323436;
+
     }
 }

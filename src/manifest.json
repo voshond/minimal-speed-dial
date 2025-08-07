@@ -12,7 +12,8 @@
 	},
 	"permissions": [
 		"bookmarks",
-		"favicon"
+		"favicon",
+		"tabs"
 	],
 	"web_accessible_resources": [{
 		"resources": [

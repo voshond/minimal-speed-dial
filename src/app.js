@@ -14,6 +14,14 @@ window.onload = function () {
 			? bookmarksBar?.children?.find((el) => el.title === _FOLDER)
 			: bookmarksBar;
 
+
+		// Link to Bookmarks Manager
+		document.querySelector('aside button').addEventListener('click', function(e) {
+			const id = folder ? folder.id : 0;
+			chrome.tabs.create({ url: `chrome://bookmarks/?id=${id}` });
+		});
+
+
 		if (folder) {
 			let html = '';
 
@@ -64,7 +72,7 @@ window.onload = function () {
 
 		} else {
 
-			document.querySelector('main').innerHTML = '<p>No bookmarks found.</p>';
+			document.querySelector('main').innerHTML = `<p>No bookmarks found.</p>`;
 
 		}
 	});
