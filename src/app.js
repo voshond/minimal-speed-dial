@@ -35,7 +35,7 @@ window.onload = function () {
 				for (let bm of directLinks) {
 					html += `<li>
 						<figure>
-							<a href="${bm.url}">
+							<a href="${bm.url}" title="${bm.title}">
 								<img alt="${bm.title}" src="chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(bm.url)}&size=128" />
 								<figcaption>${bm.title}</figcaption>
 							</a>
@@ -55,7 +55,7 @@ window.onload = function () {
 							if (bm.url) {  // Only process if it's a bookmark, not a subfolder
 								html += `<li>
 									<figure>
-										<a href="${bm.url}">
+										<a href="${bm.url}" title="${bm.title}">
 											<img alt="${bm.title}" src="chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(bm.url)}&size=128" />
 											<figcaption>${bm.title}</figcaption>
 										</a>
