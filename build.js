@@ -17,7 +17,10 @@ const geckoBlock = {
 	browser_specific_settings: {
 		gecko: {
 			id: "minimal-speed-dial@alterebro.com",
-			strict_min_version: "109.0"
+			strict_min_version: "109.0",
+			data_collection_permissions: {
+				required: ["websiteActivity"]
+			}
 		}
 	}
 };
