@@ -47,8 +47,31 @@ window.onload = function () {
 		});
 
 
+		function createBookmarkItem(bm) {
+			const li = document.createElement('li');
+			const figure = document.createElement('figure');
+			const a = document.createElement('a');
+			const img = document.createElement('img');
+			const figcaption = document.createElement('figcaption');
+
+			a.href = bm.url;
+			a.title = bm.title;
+
+			img.alt = bm.title;
+			img.src = getFaviconUrl(bm.url);
+
+			figcaption.textContent = bm.title;
+
+			a.appendChild(img);
+			a.appendChild(figcaption);
+			figure.appendChild(a);
+			li.appendChild(figure);
+
+			return li;
+		}
+
 		if (folder) {
-			let html = '';
+			const fragment = document.createDocumentFragment();
 
 			// Separate child folders from direct links
 			const childFolders = folder.children?.filter(item => item.children) || [];
@@ -56,48 +79,41 @@ window.onload = function () {
 
 			// If there are direct links, create a top-level list
 			if (directLinks.length > 0) {
-				html += '<ul>\n';
+				const ul = document.createElement('ul');
 				for (let bm of directLinks) {
-					html += `<li>
-						<figure>
-							<a href="${bm.url}" title="${bm.title}">
-								<img alt="${bm.title}" src="${getFaviconUrl(bm.url)}" />
-								<figcaption>${bm.title}</figcaption>
-							</a>
-						</figure>
-					</li>`;
+					ul.appendChild(createBookmarkItem(bm));
 				}
-				html += '\n</ul>\n\n';
+				fragment.appendChild(ul);
 			}
 
 			// Process each child folder
 			if (childFolders.length > 0) {
 				for (let childFolder of childFolders) {
 					if (childFolder.children && childFolder.children.length > 0) {
-						html += `<h3>${childFolder.title}</h3>\n`;
-						html += '<ul>\n';
+						const h3 = document.createElement('h3');
+						h3.textContent = childFolder.title;
+						fragment.appendChild(h3);
+
+						const ul = document.createElement('ul');
 						for (let bm of childFolder.children) {
 							if (bm.url) {  // Only process if it's a bookmark, not a subfolder
-								html += `<li>
-									<figure>
-										<a href="${bm.url}" title="${bm.title}">
-											<img alt="${bm.title}" src="${getFaviconUrl(bm.url)}" />
-											<figcaption>${bm.title}</figcaption>
-										</a>
-									</figure>
-								</li>`;
+								ul.appendChild(createBookmarkItem(bm));
 							}
 						}
-						html += '\n</ul>\n\n';
+						fragment.appendChild(ul);
 					}
 				}
 			}
 
-			document.querySelector('main').innerHTML = html;
+			const main = document.querySelector('main');
+			main.replaceChildren(fragment);
 
 		} else {
 
-			document.querySelector('main').innerHTML = `<p>No bookmarks found.</p>`;
+			const main = document.querySelector('main');
+			const p = document.createElement('p');
+			p.textContent = 'No bookmarks found.';
+			main.replaceChildren(p);
 
 		}
 	});

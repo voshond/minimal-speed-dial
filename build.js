@@ -17,13 +17,15 @@ const geckoBlock = {
 	browser_specific_settings: {
 		gecko: {
 			id: "minimal-speed-dial@alterebro.com",
-			strict_min_version: "109.0",
+			strict_min_version: "140.0",
 			data_collection_permissions: {
 				required: ["websiteActivity"]
 			}
 		}
 	}
 };
+
+const chromeOnlyPermissions = ['favicon'];
 
 function cleanDir(dir) {
 	if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
@@ -40,6 +42,8 @@ function cleanZips(dir) {
 function copyRecursiveSync(src, dest) {
 	const entries = fs.readdirSync(src, { withFileTypes: true });
 	for (let entry of entries) {
+		if (entry.name === '.DS_Store') continue;
+
 		const srcPath = path.join(src, entry.name);
 		const destPath = path.join(dest, entry.name);
 
@@ -67,6 +71,11 @@ function writeManifest(target, outDir) {
 	manifest.version = version;
 	if (target === 'firefox') {
 		manifest.browser_specific_settings = geckoBlock.browser_specific_settings;
+		if (Array.isArray(manifest.permissions)) {
+			manifest.permissions = manifest.permissions.filter(
+				(p) => !chromeOnlyPermissions.includes(p)
+			);
+		}
 	} else {
 		delete manifest.browser_specific_settings;
 	}
