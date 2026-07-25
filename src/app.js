@@ -2,6 +2,24 @@ window.onload = function () {
 
 	const _FOLDER = 'HomePage';
 
+	const isFirefox = navigator.userAgent.includes('Firefox');
+	const isChromium = typeof chrome !== 'undefined'
+		&& !!chrome.runtime?.id
+		&& !isFirefox;
+
+	function getFaviconUrl(pageUrl, size = 128) {
+		if (isChromium) {
+			return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(pageUrl)}&size=${size}`;
+		}
+		// Firefox Fallback
+		try {
+			const hostname = new URL(pageUrl).hostname;
+			return `https://www.google.com/s2/favicons?domain=${hostname}&sz=${size}`;
+		} catch (e) {
+			return '';
+		}
+	}		
+
 	chrome.bookmarks.getTree((root) => {
 
 		// const folder = root[0]?.children?.[0]?.children?.find((el) => el.title === _FOLDER);
@@ -16,7 +34,14 @@ window.onload = function () {
 
 
 		// Link to Bookmarks Manager
+		// Firefox doesn't expose a navigable URL for its bookmarks manager
+		// (chrome://bookmarks/ is Chrome-only), so we show the keyboard
+		// shortcut instead.
 		document.querySelector('aside button').addEventListener('click', function(e) {
+			if (isFirefox) {
+				alert('To manage bookmarks in Firefox, use Ctrl+Shift+O (or Cmd+Shift+O on Mac).');
+				return;
+			}
 			const id = folder ? folder.id : 0;
 			chrome.tabs.create({ url: `chrome://bookmarks/?id=${id}` });
 		});
@@ -36,7 +61,7 @@ window.onload = function () {
 					html += `<li>
 						<figure>
 							<a href="${bm.url}" title="${bm.title}">
-								<img alt="${bm.title}" src="chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(bm.url)}&size=128" />
+								<img alt="${bm.title}" src="${getFaviconUrl(bm.url)}" />
 								<figcaption>${bm.title}</figcaption>
 							</a>
 						</figure>
@@ -56,7 +81,7 @@ window.onload = function () {
 								html += `<li>
 									<figure>
 										<a href="${bm.url}" title="${bm.title}">
-											<img alt="${bm.title}" src="chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(bm.url)}&size=128" />
+											<img alt="${bm.title}" src="${getFaviconUrl(bm.url)}" />
 											<figcaption>${bm.title}</figcaption>
 										</a>
 									</figure>

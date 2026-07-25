@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 
 const targets = ['chrome', 'firefox'];
 const rootDir = __dirname;
@@ -72,7 +72,7 @@ function writeManifest(target, outDir) {
 
 function zipDirectory(srcDir, outPath) {
 	const output = fs.createWriteStream(outPath);
-	const archive = archiver('zip', { zlib: { level: 9 } });
+	const archive = new ZipArchive({ zlib: { level: 9 } });
 	return new Promise((resolve, reject) => {
 		archive.pipe(output);
 		archive.directory(srcDir, false);
