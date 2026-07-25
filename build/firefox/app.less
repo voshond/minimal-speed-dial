@@ -1,0 +1,130 @@
+*, *:before, *:after {
+	box-sizing: border-box;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	border: none;
+	background-repeat: no-repeat;
+}
+
+html, body, ul, li, figure, a, img, figcaption, aside, button {
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	scroll-behavior: smooth;
+	text-size-adjust: none;
+	font-size: 62.5%;
+	color: #323436;
+	background-color: #f0f0f0;
+	background-image: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%);
+	background-attachment: fixed;
+	height: 100%;
+}
+
+body {
+	line-height: 1.4;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+	font-size: 1.6em;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 2rem 0;
+}
+
+aside {
+	position: fixed;
+	bottom: 2rem;
+	right: 2rem;
+	width: 4.2rem;
+	height: 4.2rem;
+
+	button {
+		width: 100%;
+		height: 100%;
+		display: block;
+		border-radius: 100%;
+		cursor: pointer;
+		font-size: x-large;
+		background: rgba(255, 255, 255, 0.4);
+		color: #323436;
+		transition: all 0.2s ease-in-out;
+	}
+
+	button:hover {
+		background: rgba(255, 255, 255, 1);
+		color: #000;
+		box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.025), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+	}
+}
+
+main {
+	width: 100%;
+	max-width: 82rem;
+	flex-shrink: 0;
+
+	h3 {
+		margin: 1rem 2rem;
+		font-size: small;
+		font-weight: bold;
+		padding: 0 0 .25rem .25rem;
+		border-bottom: dotted #ccc 1px;
+	}
+
+	ul {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+		gap: 0.7rem;
+		justify-content: center;
+		text-align: center;
+		padding: 0 2rem;
+	}
+
+	li, figure {
+		display: block;
+	}
+
+	a {
+		display: block;
+		text-decoration: none;
+		text-align: center;
+		padding: 1.2rem 1.2rem 1rem;
+		border-radius: 1rem;
+		background: rgba(255, 255, 255, 0.4);
+		color: #323436;
+		transition: all 0.2s ease-in-out;
+	}
+
+	a:hover {
+		background: rgba(255, 255, 255, 1);
+		color: #000;
+		box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.025), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+	}
+
+	img {
+		display: block;
+		width: 2.4rem;
+		height: 2.4rem;
+		object-fit: cover;
+		margin: 0 auto 0.6rem;
+	}
+
+	figcaption {
+		display: block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: small;
+	}
+
+	p {
+		text-align: center;
+		padding: 1.6rem 1.2rem 1.2rem;
+		border-radius: 1rem;
+		background: rgba(255, 255, 255, 0.4);
+		color: #323436;
+	}
+}

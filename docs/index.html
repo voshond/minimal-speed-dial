@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Minimal Speed Dial – Docs</title>
+<style>
+body { 
+    max-width: 42rem; 
+    margin: 0 auto; 
+    padding: 2rem; 
+    font-family: system-ui, sans-serif; 
+	color: #333; 
+    font-weight: 400; 
+    line-height: 1.65; 
+    font-size: 1em; 
+}
+strong { font-weight: 600; }
+a { 
+    color: #09f; 
+    text-decoration: none; 
+}
+a:hover { 
+    color: #000; 
+    text-decoration: underline; 
+}
+ul { padding: 1em 2em; }
+ul li { padding: .1em 0; }
+ul li:first-child { padding-top: 0; }
+ul li:last-child { padding-bottom: 0; }
+h1, h2, h3 {
+    line-height: 1.3; 
+    font-weight: 700; 
+}
+h1 { 
+    font-size: 200%; 
+    margin: 0 0 .5em; 
+    letter-spacing: -.5px; 
+}
+h2 { 
+    font-size: 165%; 
+    margin: 0 0 .25em; 
+}
+h3 { 
+    font-size: 135%; 
+    margin: 0 0 .25em; 
+}
+p { margin: 1em 0; }
+p+h2, ul+h2, ol+h2 {  padding-top: 1.5em; }
+p+h3, ul+h3, ol+h3 {  padding-top: 1em; }
+p+ul {  padding-top: 0; }
+img { 
+    display: block; 
+    max-width: 100%; 
+    margin: 2em 0; 
+    border-radius: 5px; 
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, .15); 
+}
+pre { 
+    font-family: Consolas, Menlo, Monaco, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", "Courier New", Courier, monospace; 
+    font-size: .85rem; 
+    tab-size: 2; 
+    border-radius: 5px; 
+    padding: 1em; 
+    max-width: 100%; 
+    background: #eee; 
+    color: #555; 
+    overflow-x: scroll; 
+}
+hr { 
+    background: none; 
+    border: none; 
+    border-bottom: dashed #999 1px; 
+    height: 1px; 
+    line-height: 1px; 
+    margin: 2em 0; 
+    padding: 0; 
+}
+</style>
+</head>
+<body>
+	<h1>Minimal Speed Dial</h1>
+<blockquote>
+<p>Browser extension that replaces the new tab page with a minimal speed dial, automatically populated by the links bookmarked on the <code>Bookmarks/HomePage</code> folder.</p>
+</blockquote>
+<p>This Chrome extension replaces the default new tab page with a minimal speed dial interface. It pulls links and subfolders from the <code>Bookmarks/HomePage</code> folder, allowing users to organize and access their bookmarks without Chrome’s 10-link restriction.</p>
+<ul>
+<li><strong>No link limit</strong>. Display as many bookmarks as needed.</li>
+<li><strong>Automatic sync</strong>. Bookmarks and subfolders saved in the <code>HomePage</code> folder appear instantly.</li>
+<li><strong>Subfolder support</strong>. Automatically organizes subfolders within <code>HomePage</code> into categorized sections with headers.</li>
+<li><strong>Bookmarks Manager shortcut</strong>. Floating action button for quick access to manage bookmarks.</li>
+<li><strong>Simplified design</strong>. Removes distractions, focusing only on quick access to saved links.</li>
+</ul>
+<p>A lightweight alternative for users who prefer a straightforward, customizable new tab page.</p>
+<p><img src="images/minimal-speed-dial-browser-folders.png" alt="Minimal Speed Dial · Desktop"></p>
+<h2>Installation</h2>
+<ol>
+<li>Download or clone this repository</li>
+<li>Open Chrome and go to <code>chrome://extensions/</code></li>
+<li>Enable &quot;Developer mode&quot; in the top right corner</li>
+<li>Click &quot;Load unpacked&quot; and select the extension <code>/src</code> directory</li>
+</ol>
+<h2>Getting Started</h2>
+<p>The extension reads bookmarks from a folder named <strong><code>HomePage</code></strong> inside your
+bookmarks bar. If you don&#39;t already have one, you&#39;ll see a &quot;No bookmarks found.&quot;
+message — here&#39;s how to fix it:</p>
+<ol>
+<li>Open your browser&#39;s <strong>Bookmarks Manager</strong>
+(<code>chrome://bookmarks/</code> or <code>about:bookmarks</code>).</li>
+<li>Create a new folder called <strong><code>HomePage</code></strong> in the bookmarks bar.</li>
+<li>Add your favorite links inside that folder. Bookmark subfolders
+are automatically displayed as grouped sections.</li>
+<li>Open a new tab — your speed dial will appear instantly.</li>
+</ol>
+<blockquote>
+<p>The floating <strong><code>+</code></strong> button in the bottom-right corner is a shortcut
+to the Bookmarks Manager for quick editing.</p>
+</blockquote>
+<hr>
+<p>&mdash; <a href="https://x.com/alterebro">@alterebro</a></p>
+
+</body>
+</html>
