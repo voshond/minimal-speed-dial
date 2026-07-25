@@ -1,6 +1,6 @@
 {
   "name": "minimal-speed-dial",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Browser extension that replaces the browsers new tab with a minimal speed dial populated from Bookmarks/HomePage folder",
   "main": "build.js",
   "scripts": {
