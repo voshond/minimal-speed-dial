@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Minimal Speed Dial",
   "description": "Minimal Speed Dial that populates with the links bookmarked on your Bookmarks/HomePage folder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Jorge Moreno, @alterebro",
   "icons": {
     "128": "icons/icon-128.png"
