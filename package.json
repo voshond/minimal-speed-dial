@@ -1,0 +1,28 @@
+{
+  "name": "minimal-speed-dial",
+  "version": "0.0.1",
+  "description": "Browser extension that replaces the browsers new tab with a minimal speed dial populated from Bookmarks/HomePage folder",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alterebro/minimal-speed-dial.git"
+  },
+  "keywords": [
+    "browser",
+    "extension",
+    "addon"
+  ],
+  "author": "Jorge Moreno (@alterebro)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alterebro/minimal-speed-dial/issues"
+  },
+  "homepage": "https://github.com/alterebro/minimal-speed-dial#readme",
+  "dependencies": {
+    "archiver": "^8.0.0",
+    "marked": "^18.0.7"
+  }
+}
