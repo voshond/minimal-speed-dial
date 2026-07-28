@@ -2,7 +2,11 @@
 
 > Browser extension that replaces the new tab page with a minimal speed dial, automatically populated by the links bookmarked on the `Bookmarks/HomePage` folder.
 
-This Chrome extension replaces the default new tab page with a minimal speed dial interface. It pulls links and subfolders from the `Bookmarks/HomePage` folder, allowing users to organize and access their bookmarks without Chrome’s 10-link restriction.
+- 🌐 Chrome: [chromewebstore.google.com/detail/minimal-speed-dial/nfbo...](https://chromewebstore.google.com/detail/minimal-speed-dial/nfbokdfpeanknhkligpmpmlhpakkeold)
+- 🦊 Firefox: [addons.mozilla.org/addon/minimal-speed-dial](https://addons.mozilla.org/addon/minimal-speed-dial/)
+
+
+This Browser extension replaces the default new tab page with a minimal speed dial interface. It pulls links and subfolders from the `Bookmarks/HomePage` folder, allowing users to organize and access their bookmarks without Chrome’s 10-link restriction.
 
 - **No link limit**. Display as many bookmarks as needed.
 - **Automatic sync**. Bookmarks and subfolders saved in the `HomePage` folder appear instantly.
@@ -12,7 +16,7 @@ This Chrome extension replaces the default new tab page with a minimal speed dia
 
 A lightweight alternative for users who prefer a straightforward, customizable new tab page.
 
-![Minimal Speed Dial · Desktop](images/minimal-speed-dial-browser-folders.png)
+![Minimal Speed Dial · Desktop](images/minimal-speed-dial-screenshot.png)
 
 ## Installation
 
