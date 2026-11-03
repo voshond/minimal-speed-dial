@@ -33,19 +33,19 @@ export async function getHomeFolder() {
 		: bookmarksBar;
 }
 
-// [{ title, items: [bookmark] }]. Direct links come first with a null title,
-// then one section per non-empty subfolder.
+// [{ id, title, items: [bookmark] }]. Direct links come first (id 'root',
+// null title), then one section per non-empty subfolder (its bookmark id).
 export function getSections(folder) {
 	const children = folder?.children || [];
 	const sections = [];
 
 	const direct = children.filter((item) => item.url);
-	if (direct.length) sections.push({ title: null, items: direct });
+	if (direct.length) sections.push({ id: 'root', title: null, items: direct });
 
 	for (const child of children) {
 		if (!child.children) continue;
 		const items = child.children.filter((item) => item.url);
-		if (items.length) sections.push({ title: child.title, items });
+		if (items.length) sections.push({ id: child.id, title: child.title, items });
 	}
 	return sections;
 }

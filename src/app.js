@@ -25,6 +25,7 @@ const previewsButton = document.querySelector('#previews');
 let folder = null;
 let pages = [];       // [{ title, items }]
 let pageIndex = 0;
+const LAST_PAGE_KEY = 'lastPage'; // id of the folder page shown last
 let wall = null;      // strips (the curved surface)
 let overlay = null;   // icons, captions, buttons; drawn after the wall so
                       // they're never hidden by 3D depth sorting
@@ -334,6 +335,9 @@ new ResizeObserver(layout).observe(stage);
 
 function show(direction = 0) {
 	const query = filter.value.trim().toLowerCase();
+	if (!query && pages[pageIndex]) {
+		try { localStorage.setItem(LAST_PAGE_KEY, pages[pageIndex].id); } catch (e) {}
+	}
 	const items = query
 		? pages.flatMap((p) => p.items).filter((bm) => `${bm.title} ${bm.url}`.toLowerCase().includes(query))
 		: pages[pageIndex]?.items || [];
@@ -527,7 +531,11 @@ document.querySelector('#edit').addEventListener('click', () => {
 
 async function init() {
 	folder = await getHomeFolder();
-	pages = getSections(folder).map((s) => ({ title: s.title ?? 'Top Sites', items: s.items }));
+	pages = getSections(folder).map((s) => ({ id: s.id, title: s.title ?? 'Top Sites', items: s.items }));
+
+	// Reopen the folder shown last (by bookmark id, so reordering is fine)
+	const last = pages.findIndex((p) => p.id === localStorage.getItem(LAST_PAGE_KEY));
+	pageIndex = Math.max(0, last);
 	renderNav();
 
 	// Capture windows still open from an earlier new tab page
