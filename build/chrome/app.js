@@ -142,20 +142,41 @@ function cameraIcon() {
 	return svg;
 }
 
+// backdrop-filter can't see the preview (it's on another 3D layer), so the
+// pill draws its own blurred copy of it. Align that copy with the tile: the
+// caption is 0.9w wide, centred, with its bottom at 0.95h (see layout()).
+let tileSize = null; // { w, h } from the last layout
+function placePillBackdrop(tile) {
+	if (!tileSize || !tile.over.classList.contains('has-thumb')) return;
+	const { w, h } = tileSize;
+	const pill = tile.caption.firstChild;
+	const x = w * 0.05 + pill.offsetLeft;
+	const y = h * 0.95 - tile.caption.offsetHeight + pill.offsetTop;
+	pill.style.setProperty('--bx', `${-x}px`);
+	pill.style.setProperty('--by', `${-y}px`);
+}
+
 function setThumb(tile) {
 	const data = thumbs[thumbKey(tile.bm.url)];
-	for (const el of [tile.el, tile.over]) el.classList.toggle('has-thumb', !!data);
-	tile.el.style.removeProperty('--cover');
+	// The overlay gets the image too: the label pill blurs it behind its text
+	const both = [tile.el, tile.over];
+	for (const el of both) {
+		el.classList.toggle('has-thumb', !!data);
+		el.style.removeProperty('--cover');
+	}
 	if (!data) {
-		tile.el.style.removeProperty('--img');
+		for (const el of both) el.style.removeProperty('--img');
 		return;
 	}
-	tile.el.style.setProperty('--img', `url("${data}")`);
+	for (const el of both) el.style.setProperty('--img', `url("${data}")`);
+	placePillBackdrop(tile);
 
 	// Previews from very wide windows are shorter than the tile: scale those
 	// to the tile height instead (cropping the right side) so no gap shows
 	const apply = (ratio) => {
-		if (ratio < RATIO) tile.el.style.setProperty('--cover', `calc(var(--h) / ${ratio})`);
+		if (ratio < RATIO) {
+			for (const el of both) el.style.setProperty('--cover', `calc(var(--h) / ${ratio})`);
+		}
 	};
 	if (thumbRatios.has(data)) {
 		apply(thumbRatios.get(data));
@@ -280,6 +301,7 @@ function layout() {
 	};
 
 
+	tileSize = { w, h };
 	tiles.forEach((tile, k) => {
 		const row = Math.floor(k / cols);
 		const inRow = row === rows - 1 ? n - row * cols : cols;
@@ -299,6 +321,7 @@ function layout() {
 		});
 		tile.face.style.transform = place(mid, top + h / 2);
 		tile.caption.style.transform = place(mid, top + h * 0.95, 0, '-50%, -100%');
+		placePillBackdrop(tile);
 		tile.refresh.style.transform = place(left + w - h * 0.14, top + h * 0.14);
 		tile.el.classList.toggle('last-row', lastRow);
 	});
