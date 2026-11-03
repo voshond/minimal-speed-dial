@@ -11,7 +11,6 @@ const THUMB_RATIO = 10 / 16;          // max height / width kept from the top of
 const MIN_RATIO = 9 / 16;             // the tiles' shape; wider shots get cropped to it
 
 const timers = new Map();
-const manualTabs = new Set(); // tabs opened by captureUrl, skipped by auto-capture
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function schedule(tabId) {
@@ -31,6 +30,7 @@ api.tabs.onActivated.addListener(({ tabId }) => schedule(tabId));
 
 api.tabs.onRemoved.addListener((tabId) => {
 	api.storage.session.remove(`expect:${tabId}`);
+	clearPending(tabId); // closing the capture window cancels it
 });
 
 async function findTarget(tab) {
@@ -56,7 +56,7 @@ async function findTarget(tab) {
 async function capture(tabId) {
 	if (!(await api.permissions.contains(PREVIEW_PERMISSIONS))) return;
 
-	if (manualTabs.has(tabId)) return;
+	if (await getPending(tabId)) return; // the user decides when to capture
 	const tab = await api.tabs.get(tabId).catch(() => null);
 	if (!tab || !tab.active || tab.incognito || tab.status !== 'complete') return;
 	if (!/^https?:/.test(tab.url || '')) return;
@@ -97,72 +97,133 @@ async function scrollbarFraction(tabId) {
 }
 
 
-// On-demand capture (refresh button on a tile) ----------------------------
-// Loads the page in the background with the normal browser session (so
-// logged-in pages render as you see them), screenshots it and closes it.
+// On-demand capture (capture button on a tile) ----------------------------
+// Opens the page in a popup window with the normal browser session. A small
+// bar injected into the page lets the user log in / get the page ready and
+// then trigger the screenshot; closing the window cancels.
+//
+// State lives in storage.session (the service worker may be stopped while
+// the user is logging in):
+//   pending:<tabId>        → { url, windowId }
+//   capturing:<thumbKey>   → true while a capture for that bookmark is open
 
 api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-	if (msg?.type !== 'capture-url' || sender.id !== api.runtime.id) return;
-	captureUrl(msg.url).then(
-		() => sendResponse({ ok: true }),
-		(e) => sendResponse({ ok: false, error: String(e?.message || e) }),
-	);
-	return true; // async response
+	if (sender.id !== api.runtime.id) return;
+
+	if (msg?.type === 'capture-url') {
+		startCapture(msg.url).then(
+			() => sendResponse({ ok: true }),
+			(e) => sendResponse({ ok: false, error: String(e?.message || e) }),
+		);
+		return true; // async response
+	}
+
+	if (msg?.type === 'capture-ready' && sender.tab) {
+		finishCapture(sender.tab).catch((e) => console.warn('Preview capture failed:', e));
+	} else if (msg?.type === 'capture-cancel' && sender.tab) {
+		api.windows.remove(sender.tab.windowId).catch(() => {});
+	}
 });
 
-async function captureUrl(url) {
+async function getPending(tabId) {
+	const key = `pending:${tabId}`;
+	return (await api.storage.session.get(key))[key] || null;
+}
+
+async function clearPending(tabId) {
+	const pending = await getPending(tabId);
+	if (!pending) return;
+	await api.storage.session.remove([`pending:${tabId}`, `capturing:${thumbKey(pending.url)}`]);
+}
+
+async function startCapture(url) {
 	if (!/^https?:/.test(url)) throw new Error('Only web pages can be previewed.');
 	if (!(await api.permissions.contains(PREVIEW_PERMISSIONS))) {
 		throw new Error('Previews are not enabled.');
 	}
-
-	let shot, gutter;
-	if (api.tabs.captureTab) {
-		// Firefox can screenshot a background tab directly
-		const tab = await api.tabs.create({ url, active: false });
-		manualTabs.add(tab.id);
-		try {
-			await waitForLoad(tab.id);
-			gutter = await scrollbarFraction(tab.id);
-			shot = await api.tabs.captureTab(tab.id, { format: 'jpeg', quality: 90 });
-		} finally {
-			manualTabs.delete(tab.id);
-			api.tabs.remove(tab.id).catch(() => {});
-		}
-	} else {
-		// Chrome only captures the visible tab of a window, so use a small
-		// unfocused popup window
-		const win = await api.windows.create({ url, type: 'popup', focused: false, width: 1280, height: 880 });
-		const tabId = win.tabs[0].id;
-		manualTabs.add(tabId);
-		try {
-			await waitForLoad(tabId);
-			gutter = await scrollbarFraction(tabId);
-			shot = await api.tabs.captureVisibleTab(win.id, { format: 'jpeg', quality: 90 });
-		} finally {
-			manualTabs.delete(tabId);
-			api.windows.remove(win.id).catch(() => {});
-		}
-	}
-	await store(url, shot, gutter);
+	const win = await api.windows.create({ url, type: 'popup', focused: true, width: 1280, height: 880 });
+	const tabId = win.tabs[0].id;
+	await api.storage.session.set({
+		[`pending:${tabId}`]: { url, windowId: win.id },
+		[`capturing:${thumbKey(url)}`]: true,
+	});
+	injectBar(tabId); // in case the page already finished loading
 }
 
-function waitForLoad(tabId, timeout = 15000) {
-	return new Promise((resolve, reject) => {
-		const loaded = (tab) => tab.status === 'complete' && tab.url && tab.url !== 'about:blank';
-		const finish = (fn, value) => {
-			clearTimeout(timer);
-			api.tabs.onUpdated.removeListener(onUpdated);
-			fn(value);
-		};
-		const onUpdated = (id, info, tab) => {
-			if (id === tabId && loaded(tab)) finish(resolve);
-		};
-		// Slow pages: capture whatever has rendered by then
-		const timer = setTimeout(() => finish(resolve), timeout);
-		api.tabs.onUpdated.addListener(onUpdated);
-		api.tabs.get(tabId).then((tab) => loaded(tab) && finish(resolve), (e) => finish(reject, e));
-	}).then(() => sleep(1500)); // let late content and fonts settle
+// Re-add the bar after every page load (login redirects, …)
+api.tabs.onUpdated.addListener(async (tabId, info) => {
+	if (info.status === 'complete' && await getPending(tabId)) injectBar(tabId);
+});
+
+function injectBar(tabId) {
+	api.scripting.executeScript({ target: { tabId }, func: captureBar }).catch(() => {});
+}
+
+async function finishCapture(tab) {
+	const pending = await getPending(tab.id);
+	if (!pending) return;
+	await sleep(150); // the bar has just been removed; let the page repaint
+	const gutter = await scrollbarFraction(tab.id);
+	const shot = await api.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 90 });
+	await store(pending.url, shot, gutter);
+	await clearPending(tab.id);
+	api.windows.remove(pending.windowId).catch(() => {});
+}
+
+// Runs inside the web page. Self-contained; styled through the style
+// property so strict page CSPs don't block it, in a shadow root so page
+// styles don't leak in.
+function captureBar() {
+	const ID = '__minimal_speed_dial_capture__';
+	if (document.getElementById(ID)) return;
+	const ext = globalThis.browser ?? globalThis.chrome;
+
+	const host = document.createElement('div');
+	host.id = ID;
+	host.style.all = 'initial'; // ignore page rules like `div { display: none }`
+	Object.assign(host.style, {
+		position: 'fixed', left: '50%', bottom: '24px', transform: 'translateX(-50%)',
+		zIndex: '2147483647',
+	});
+	const root = host.attachShadow({ mode: 'closed' });
+
+	const bar = document.createElement('div');
+	Object.assign(bar.style, {
+		display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 8px 8px 16px',
+		borderRadius: '999px', background: 'rgba(20, 22, 26, 0.94)', color: '#e8eaec',
+		font: '500 13px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif',
+		boxShadow: '0 6px 24px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.12)',
+		whiteSpace: 'nowrap',
+	});
+
+	const text = document.createElement('span');
+	text.textContent = 'Log in or get the page ready, then';
+
+	const button = (label, primary) => {
+		const b = document.createElement('button');
+		b.type = 'button';
+		b.textContent = label;
+		Object.assign(b.style, {
+			font: 'inherit', fontWeight: '600', cursor: 'pointer', borderRadius: '999px',
+			padding: '7px 14px', border: primary ? 'none' : '1px solid rgba(255,255,255,.3)',
+			background: primary ? '#5b8cff' : 'transparent', color: '#fff',
+		});
+		return b;
+	};
+	const capture = button('Capture preview', true);
+	const cancel = button('Cancel', false);
+
+	capture.addEventListener('click', () => {
+		host.remove(); // keep the bar out of the screenshot
+		requestAnimationFrame(() => requestAnimationFrame(() => {
+			ext.runtime.sendMessage({ type: 'capture-ready' });
+		}));
+	});
+	cancel.addEventListener('click', () => ext.runtime.sendMessage({ type: 'capture-cancel' }));
+
+	bar.append(text, capture, cancel);
+	root.append(bar);
+	document.documentElement.append(host);
 }
 
 // Crop the top of the viewport to the tile ratio and scale it down

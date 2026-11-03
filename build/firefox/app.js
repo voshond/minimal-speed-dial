@@ -46,7 +46,6 @@ function createTile(bm, k) {
 	const label = document.createElement('span');
 	const caption = document.createElement('span');
 	const refresh = document.createElement('button');
-	const glyph = document.createElement('span');
 
 	el.className = 'tile';
 	over.className = 'tile';
@@ -97,9 +96,9 @@ function createTile(bm, k) {
 
 	refresh.className = 'refresh';
 	refresh.type = 'button';
-	refresh.title = 'Capture preview (loads the page in the background, logged in as you)';
-	glyph.textContent = '↻';
-	refresh.append(glyph);
+	refresh.title = 'Capture preview: opens the page in a window where you can log in, then click "Capture preview"';
+	refresh.setAttribute('aria-label', 'Capture preview');
+	refresh.append(cameraIcon(), Object.assign(document.createElement('span'), { className: 'spinner' }));
 
 	const tile = { el, over, bm, strips, mirror, face, caption, refresh };
 	refresh.addEventListener('click', (e) => capturePreview(e, tile));
@@ -120,10 +119,28 @@ function createTile(bm, k) {
 	over.append(face, caption, refresh);
 
 	setThumb(tile);
+	over.classList.toggle('busy', capturing.has(thumbKey(bm.url)));
 	return tile;
 }
 
 const thumbRatios = new Map(); // data URL → height / width
+
+// Camera outline (24×24, stroke icon)
+function cameraIcon() {
+	const NS = 'http://www.w3.org/2000/svg';
+	const svg = document.createElementNS(NS, 'svg');
+	svg.setAttribute('viewBox', '0 0 24 24');
+	svg.setAttribute('aria-hidden', 'true');
+	svg.classList.add('camera');
+	const body = document.createElementNS(NS, 'path');
+	body.setAttribute('d', 'M4 8.5A1.5 1.5 0 0 1 5.5 7h2.3l1.4-2h5.6l1.4 2h2.3A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z');
+	const lens = document.createElementNS(NS, 'circle');
+	lens.setAttribute('cx', '12');
+	lens.setAttribute('cy', '12.75');
+	lens.setAttribute('r', '3.25');
+	svg.append(body, lens);
+	return svg;
+}
 
 function setThumb(tile) {
 	const data = thumbs[thumbKey(tile.bm.url)];
@@ -159,23 +176,43 @@ function capturePreview(e, tile) {
 
 	// permissions.request has to be called straight from the click. It
 	// resolves immediately when already granted.
+	const key = thumbKey(tile.bm.url);
 	api.permissions.request(PREVIEW_PERMISSIONS).then((granted) => {
 		updatePreviewsButton();
 		if (!granted) return;
-		tile.over.classList.add('busy');
+		setCapturing(key, true);
 		return api.runtime.sendMessage({ type: 'capture-url', url: tile.bm.url }).then((res) => {
 			if (!res?.ok) throw new Error(res?.error || 'Capture failed');
 		});
 	}).catch((err) => {
+		setCapturing(key, false);
 		tile.refresh.title = `Capture failed: ${err.message}`;
 		tile.over.classList.add('failed');
 		setTimeout(() => tile.over.classList.remove('failed'), 2000);
-	}).finally(() => tile.over.classList.remove('busy'));
+	});
+	// The spinner stops when the background clears capturing:<key>, i.e.
+	// after the screenshot is saved or the capture window is closed
+}
+
+const capturing = new Set(); // thumbKeys with an open capture window
+
+function setCapturing(key, on) {
+	if (on) capturing.add(key);
+	else capturing.delete(key);
+	for (const tile of tiles) {
+		if (thumbKey(tile.bm.url) === key) tile.over.classList.toggle('busy', on);
+	}
 }
 
 // storage is missing if the extension wasn't reloaded after the manifest
 // gained the permission; the page still works, just without previews.
 api.storage?.onChanged.addListener((changes, area) => {
+	if (area === 'session') {
+		for (const [key, change] of Object.entries(changes)) {
+			if (key.startsWith('capturing:')) setCapturing(key.slice(10), !!change.newValue);
+		}
+		return;
+	}
 	if (area !== 'local') return;
 	for (const [key, change] of Object.entries(changes)) {
 		if (!key.startsWith('thumb:')) continue;
@@ -469,6 +506,14 @@ async function init() {
 	folder = await getHomeFolder();
 	pages = getSections(folder).map((s) => ({ title: s.title ?? 'Top Sites', items: s.items }));
 	renderNav();
+
+	// Capture windows still open from an earlier new tab page
+	try {
+		const session = await api.storage.session.get(null);
+		for (const key of Object.keys(session)) {
+			if (key.startsWith('capturing:')) capturing.add(key.slice(10));
+		}
+	} catch (e) {} // not essential, the page works without it
 
 	if (api.storage?.local) {
 		const keys = pages.flatMap((p) => p.items.map((bm) => thumbKey(bm.url)));

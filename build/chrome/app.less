@@ -240,21 +240,42 @@ main {
 	height: clamp(2.4rem, calc(var(--h) * 0.17), 3.4rem);
 	padding: 0;
 	border-radius: 50%;
-	font-size: clamp(1.4rem, calc(var(--h) * 0.1), 2rem);
-	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	color: #fff;
+	cursor: pointer;
 	background: rgba(20, 22, 26, 0.72);
 	border: 1px solid rgba(255, 255, 255, 0.35);
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 	opacity: 0;
 	transition: opacity 0.15s ease, background 0.15s ease;
 
-	span { display: inline-block; }
+	.camera {
+		width: 58%;
+		height: 58%;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.8;
+		stroke-linejoin: round;
+	}
+
+	// Shown instead of the camera while the capture window is open
+	.spinner {
+		display: none;
+		width: 48%;
+		height: 48%;
+		border-radius: 50%;
+		border: 2px solid rgba(255, 255, 255, 0.3);
+		border-top-color: #fff;
+		animation: spin 0.9s linear infinite;
+	}
 
 	&:hover { background: @accent; }
 
 	.hover &, &:focus-visible, .busy & { opacity: 1; }
-	.busy & span { animation: spin 0.9s linear infinite; }
+	.busy & .camera { display: none; }
+	.busy & .spinner { display: block; }
 	.failed & { background: #d9443a; opacity: 1; }
 }
 
