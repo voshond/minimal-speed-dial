@@ -1,3 +1,10 @@
+// Top Sites: page previews on the inside of a cylinder (layout in app.js)
+
+@text: #d6d8da;
+@muted: #8a8c8f;
+@accent: #5b8cff;
+@footer-height: 6rem;
+
 *, *:before, *:after {
 	box-sizing: border-box;
 	-webkit-font-smoothing: antialiased;
@@ -6,19 +13,18 @@
 	background-repeat: no-repeat;
 }
 
-html, body, ul, li, figure, a, img, figcaption, aside, button {
+html, body, h1, a, img, p, button, input, nav {
 	margin: 0;
 	padding: 0;
 }
 
 html {
-	scroll-behavior: smooth;
+	color-scheme: dark;
 	text-size-adjust: none;
 	font-size: 62.5%;
-	color: #323436;
-	background-color: #f0f0f0;
-	background-image: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%);
-	background-attachment: fixed;
+	color: @text;
+	background-color: #000;
+	background-image: radial-gradient(ellipse 120% 70% at 50% 0%, #26282c 0%, #0b0c0d 60%, #000 100%);
 	height: 100%;
 }
 
@@ -26,105 +32,349 @@ body {
 	line-height: 1.4;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 	font-size: 1.6em;
-	min-height: 100vh;
+	height: 100%;
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	padding: 2rem 0;
+	overflow: hidden;
+	user-select: none;
 }
 
-aside {
-	position: fixed;
-	bottom: 2rem;
-	right: 2rem;
-	width: 4.2rem;
-	height: 4.2rem;
-
-	button {
-		width: 100%;
-		height: 100%;
-		display: block;
-		border-radius: 100%;
-		cursor: pointer;
-		font-size: x-large;
-		background: rgba(255, 255, 255, 0.4);
-		color: #323436;
-		transition: all 0.2s ease-in-out;
-	}
-
-	button:hover {
-		background: rgba(255, 255, 255, 1);
-		color: #000;
-		box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.025), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
-	}
+// Floats over the stage: the middle of the wall recedes, leaving room for
+// it, while the outer columns can use the full height
+h1 {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 2;
+	pointer-events: none;
+	text-align: center;
+	font-size: 2.2rem;
+	font-weight: 600;
+	color: #6f7276;
+	text-shadow: 0 -1px 0 #000;
+	padding: 1.4rem 0 0;
 }
+
+// The 3D stage --------------------------------------------------------------
 
 main {
-	width: 100%;
-	max-width: 82rem;
-	flex-shrink: 0;
+	flex: 1;
+	min-height: 0;
+	position: relative;
+	overflow: hidden;
+	touch-action: pan-y; // horizontal swipes switch folders
+}
 
-	h3 {
-		margin: 1rem 2rem;
-		font-size: small;
-		font-weight: bold;
-		padding: 0 0 .25rem .25rem;
-		border-bottom: dotted #ccc 1px;
+.wall {
+	position: absolute;
+	left: 50%;
+	width: 0;
+	height: 0;
+	transform-style: preserve-3d;
+}
+
+// Every element between the wall and the strips has to keep the 3D context
+// (no opacity, filter or overflow on these)
+.tile, .link {
+	position: absolute;
+	left: 0;
+	top: 0;
+	transform-style: preserve-3d;
+}
+
+.link {
+	display: block;
+	outline: none;
+	color: inherit;
+	text-decoration: none;
+}
+
+.tile {
+	// Blank page until a preview has been captured
+	--img: linear-gradient(180deg, #fbfbfc 0%, #e2e4e8 100%);
+}
+
+.strip {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: calc(var(--sw) + 1px); // overlap to hide seams between strips
+
+	// ...except the last one, which would run past the image's right edge
+	&.last { width: var(--sw); }
+	height: var(--h);
+	background-color: #fff;
+	background-image: var(--img);
+	background-size: var(--cover, var(--w)) auto; // keep the preview's aspect, crop the bottom (or right)
+	background-position: calc(var(--i) * var(--sw) * -1) 0;
+	transition: box-shadow 0.15s ease;
+	cursor: pointer;
+}
+
+// Selection outline, drawn per strip so it follows the curve
+.tile.hover .strip:not(.mirror) {
+	box-shadow: inset 0 3px 0 @accent, inset 0 -3px 0 @accent;
+
+	&.first { box-shadow: inset 3px 0 0 @accent, inset 0 3px 0 @accent, inset 0 -3px 0 @accent; }
+	&.last { box-shadow: inset -3px 0 0 @accent, inset 0 3px 0 @accent, inset 0 -3px 0 @accent; }
+}
+
+// Floor reflection: opaque strips fading into the black floor (opaque so
+// overlapping strip edges don't show as seams). The image is flipped inside
+// the strip; flipping the strip itself confuses Chrome's 3D sorting.
+.mirror {
+	display: none;
+	pointer-events: none;
+	cursor: default;
+	background: #000;
+
+	&::before, &::after {
+		content: '';
+		position: absolute;
+		inset: 0;
 	}
 
-	ul {
-		list-style: none;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
-		gap: 0.7rem;
-		justify-content: center;
-		text-align: center;
-		padding: 0 2rem;
+	&::before {
+		background-image: var(--img);
+		background-size: var(--cover, var(--w)) auto; // keep the preview's aspect, crop the bottom (or right)
+		background-position: calc(var(--i) * var(--sw) * -1) 0;
+		transform: scaleY(-1);
 	}
 
-	li, figure {
-		display: block;
+	&::after {
+		background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, #000 55%);
 	}
 
-	a {
-		display: block;
-		text-decoration: none;
-		text-align: center;
-		padding: 1.2rem 1.2rem 1rem;
-		border-radius: 1rem;
-		background: rgba(255, 255, 255, 0.4);
-		color: #323436;
-		transition: all 0.2s ease-in-out;
+	.last-row & { display: block; }
+}
+
+.overlay {
+	pointer-events: none;
+
+	.refresh { pointer-events: auto; }
+}
+
+// Icon + title, shown until a preview exists
+.face {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: calc(var(--w) * 0.85);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(var(--h) * 0.05);
+	color: #45484c;
+	pointer-events: none;
+
+	.icon {
+		width: calc(var(--h) * 0.34);
+		height: calc(var(--h) * 0.34);
+		object-fit: contain;
+		border-radius: 18%;
 	}
 
-	a:hover {
-		background: rgba(255, 255, 255, 1);
-		color: #000;
-		box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.025), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
-	}
-
-	img {
-		display: block;
-		width: 2.4rem;
-		height: 2.4rem;
-		object-fit: cover;
-		margin: 0 auto 0.6rem;
-	}
-
-	figcaption {
-		display: block;
+	span {
+		max-width: 100%;
+		font-size: clamp(1.1rem, calc(var(--h) * 0.08), 1.6rem);
+		font-weight: 600;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		font-size: small;
 	}
 
-	p {
-		text-align: center;
-		padding: 1.6rem 1.2rem 1.2rem;
-		border-radius: 1rem;
-		background: rgba(255, 255, 255, 0.4);
-		color: #323436;
+	.has-thumb & { display: none; }
+}
+
+// Icon + title pill over a preview, always shown
+.caption {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: calc(var(--w) * 0.9);
+	display: none;
+	justify-content: center;
+	pointer-events: none;
+
+	.has-thumb & { display: flex; }
+}
+
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6em;
+	max-width: 100%;
+	padding: 0.35em 0.9em 0.35em 0.5em;
+	border-radius: 2em;
+	font-size: clamp(1.1rem, calc(var(--h) * 0.07), 1.4rem);
+	font-weight: 600;
+	color: #fff;
+	background: rgba(16, 17, 20, 0.78);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+	transition: background 0.15s ease;
+
+	img {
+		flex: none;
+		width: 1.5em;
+		height: 1.5em;
+		object-fit: contain;
+		border-radius: 0.3em;
 	}
+
+	span {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.hover & { background: fade(@accent, 92%); }
+}
+
+// Capture-preview button in the tile's top right corner
+.refresh {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: clamp(2.4rem, calc(var(--h) * 0.17), 3.4rem);
+	height: clamp(2.4rem, calc(var(--h) * 0.17), 3.4rem);
+	padding: 0;
+	border-radius: 50%;
+	font-size: clamp(1.4rem, calc(var(--h) * 0.1), 2rem);
+	line-height: 1;
+	color: #fff;
+	background: rgba(20, 22, 26, 0.72);
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+	opacity: 0;
+	transition: opacity 0.15s ease, background 0.15s ease;
+
+	span { display: inline-block; }
+
+	&:hover { background: @accent; }
+
+	.hover &, &:focus-visible, .busy & { opacity: 1; }
+	.busy & span { animation: spin 0.9s linear infinite; }
+	.failed & { background: #d9443a; opacity: 1; }
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+.empty {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: @muted;
+}
+
+// Footer bar ------------------------------------------------------------------
+
+footer {
+	flex: none;
+	height: @footer-height;
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 2rem;
+	padding: 0 2rem;
+	background: linear-gradient(180deg, rgba(40, 42, 46, 0.55), rgba(12, 13, 14, 0.85));
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	position: relative;
+	z-index: 1;
+
+	.start, .end {
+		display: flex;
+		gap: 1rem;
+		min-width: 0;
+	}
+
+	.end {
+		justify-content: flex-end;
+	}
+}
+
+// Folder switcher in the middle of the footer
+nav {
+	display: flex;
+	gap: 0.2rem;
+	padding: 0.3rem;
+	border-radius: 1.6rem;
+	background: rgba(0, 0, 0, 0.35);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.06);
+	max-width: 60vw;
+	overflow-x: auto;
+	scrollbar-width: none;
+
+	&[hidden] { display: none; }
+
+	button {
+		flex: none;
+		border-color: transparent !important;
+		border-color: transparent;
+		background: none;
+		color: #a9acb0;
+
+		&:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+
+	}
+}
+
+footer button,
+input {
+	font: inherit;
+	font-size: 1.3rem;
+	color: #e8eaec;
+	height: 2.6rem;
+	border-radius: 1.3rem;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.02));
+	outline: none;
+	white-space: nowrap;
+
+	&:focus-visible {
+		border-color: @accent;
+		box-shadow: 0 0 0 2px fade(@accent, 45%);
+	}
+}
+
+footer button {
+	padding: 0 1.4rem;
+	cursor: pointer;
+
+	&[hidden] { display: none; }
+}
+
+footer nav button {
+	background: none;
+	color: #a9acb0;
+
+	&:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+	&.active {
+		color: #fff;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
+	}
+}
+
+.start button:hover { background: rgba(255, 255, 255, 0.2); }
+.start button:active { background: rgba(255, 255, 255, 0.08); }
+
+input {
+	width: 22rem;
+	min-width: 0;
+	padding: 0 1.2rem;
+	user-select: text;
+
+	&::placeholder { color: #8f9296; }
+}
+
+@media (max-width: 760px) {
+	footer { gap: 1rem; padding: 0 1rem; }
+	#previews { display: none; }
+	input { width: 100%; }
 }

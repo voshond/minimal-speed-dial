@@ -71,6 +71,13 @@ function writeManifest(target, outDir) {
 	manifest.version = version;
 	if (target === 'firefox') {
 		manifest.browser_specific_settings = geckoBlock.browser_specific_settings;
+		// Firefox has no background service workers, it uses event pages
+		if (manifest.background?.service_worker) {
+			manifest.background = {
+				scripts: [manifest.background.service_worker],
+				type: manifest.background.type,
+			};
+		}
 		if (Array.isArray(manifest.permissions)) {
 			manifest.permissions = manifest.permissions.filter(
 				(p) => !chromeOnlyPermissions.includes(p)

@@ -10,10 +10,20 @@
 	"chrome_url_overrides": {
 		"newtab": "index.html"
 	},
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	},
 	"permissions": [
 		"bookmarks",
 		"favicon",
-		"tabs"
+		"tabs",
+		"storage",
+		"scripting",
+		"unlimitedStorage"
+	],
+	"optional_host_permissions": [
+		"<all_urls>"
 	],
 	"web_accessible_resources": [{
 		"resources": [
