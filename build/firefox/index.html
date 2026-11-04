@@ -3,14 +3,26 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
     <title>New Tab: Speed Dial</title>
     <link rel="stylesheet" href="app.css" />
     <script src="app.js" type="module"></script>
 </head>
 <body>
 
+    <h1>Top Sites</h1>
     <main><!-- Speed Dial: app.js --></main>
-    <aside><button>+</button></aside>
+
+    <footer>
+        <div class="start">
+            <button id="edit" type="button">Edit</button>
+            <button id="previews" type="button" hidden title="Allow screenshots of your bookmarked pages to use as previews">Enable previews</button>
+        </div>
+        <nav id="folders" aria-label="Folders" hidden></nav>
+        <div class="end">
+            <input id="filter" type="search" placeholder="Search Top Sites" autocomplete="off" spellcheck="false" />
+        </div>
+    </footer>
 
 </body>
 </html>
