@@ -15,6 +15,8 @@ const CAMERA = 1.35;                  // perspective distance, × cylinder radiu
 const REFLECTION = 0.12;              // reflection kept visible, × tile height;
                                       // the rest may run under the footer
 const MIN_TILE = 150;                 // px, fewer columns below this
+const MAX_COLS = 8;
+const BLEED = 2;
 
 const stage = document.querySelector('main');
 const heading = document.querySelector('h1');
@@ -266,14 +268,14 @@ function layout() {
 		const h = w * RATIO;
 		const H = rows * h + (rows - 1) * w * GAP;
 		const fit = Math.min(1, availH / (H + h * REFLECTION));
-		const empty = (cols * rows - n) / (cols * rows);
+		const holes = (cols * rows - n) / cols;
 		// Big tiles, edge to edge, few holes in the last row
-		const score = w * fit * fit * (1 - empty * 0.6);
+		const score = w * fit * fit * (1 - holes * 0.5);
 		return { cols, rows, half, R: R * fit, arc: arc * fit, w: w * fit, h: h * fit, H: H * fit, score };
 	};
 
 	let best = null;
-	for (let cols = 1; cols <= Math.min(6, n); cols++) {
+	for (let cols = 1; cols <= Math.min(MAX_COLS, n); cols++) {
 		if (cols > 1 && availW / cols < MIN_TILE) break;
 		const m = measure(cols);
 		if (!best || m.score > best.score) best = m;
@@ -292,6 +294,7 @@ function layout() {
 		el.style.setProperty('--w', `${w}px`);
 		el.style.setProperty('--h', `${h}px`);
 		el.style.setProperty('--sw', `${sw}px`);
+		el.style.setProperty('--bleed', `${BLEED}px`);
 	}
 
 	// Point on the cylinder at arc length s from the middle, facing inward
@@ -312,12 +315,14 @@ function layout() {
 		const mid = left + w / 2;
 
 		const lastRow = row === rows - 1;
+		const stripMid = (i) => left + (i + 0.5) * sw
+			+ (i === 0 ? BLEED / 2 : 0) - (i === STRIPS - 1 ? BLEED / 2 : 0);
 		tile.strips.forEach((strip, i) => {
-			strip.style.transform = place(left + (i + 0.5) * sw, top + h / 2);
+			strip.style.transform = place(stripMid(i), top + h / 2);
 		});
 		tile.mirror.forEach((strip, i) => {
 			strip.style.transform = lastRow
-				? place(left + (i + 0.5) * sw, top + h * 1.5 + 3)
+				? place(stripMid(i), top + h * 1.5 + 3)
 				: '';
 		});
 		tile.face.style.transform = place(mid, top + h / 2);

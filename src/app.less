@@ -107,10 +107,10 @@ main {
 	position: absolute;
 	left: 0;
 	top: 0;
-	width: calc(var(--sw) + 1px); // overlap to hide seams between strips
+	width: calc(var(--sw) + 2 * var(--bleed)); // overlap to hide seams between strips
 
-	// ...except the last one, which would run past the image's right edge
-	&.last { width: var(--sw); }
+	// ...except on the outer edges, which would run past the image
+	&.first, &.last { width: calc(var(--sw) + var(--bleed)); }
 
 	// Rounded tile corners, on the outer strips only
 	--radius: clamp(4px, calc(var(--h) * 0.035), 10px);
@@ -120,7 +120,8 @@ main {
 	background-color: #fff;
 	background-image: var(--img);
 	background-size: var(--cover, var(--w)) auto; // keep the preview's aspect, crop the bottom (or right)
-	background-position: calc(var(--i) * var(--sw) * -1) 0;
+	background-position: calc(var(--bleed) - var(--i) * var(--sw)) 0;
+	&.first { background-position: 0 0; }
 	transition: box-shadow 0.15s ease;
 	cursor: pointer;
 }
@@ -142,22 +143,20 @@ main {
 	cursor: default;
 	background: #000;
 
-	&::before, &::after {
+	&::before {
 		content: '';
 		position: absolute;
 		inset: 0;
 		border-radius: inherit; // keep the rounded corners
-	}
-
-	&::before {
 		background-image: var(--img);
 		background-size: var(--cover, var(--w)) auto; // keep the preview's aspect, crop the bottom (or right)
-		background-position: calc(var(--i) * var(--sw) * -1) 0;
+		background-position: calc(var(--bleed) - var(--i) * var(--sw)) 0;
+		mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0%, transparent 55%);
 		transform: scaleY(-1);
 	}
 
-	&::after {
-		background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, #000 55%);
+	&.first::before {
+		background-position: 0 0;
 	}
 
 	.last-row & { display: block; }
